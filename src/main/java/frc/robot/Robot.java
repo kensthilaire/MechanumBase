@@ -15,7 +15,6 @@ import static edu.wpi.first.wpilibj.DoubleSolenoid.Value.*;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
-
 public class Robot extends TimedRobot {
   private static final int kFrontLeftChannel = 1;
   private static final int kRearLeftChannel = 2;
@@ -27,6 +26,7 @@ public class Robot extends TimedRobot {
   private MecanumDrive m_robotDrive;
   private XboxController m_driverController;
   private DoubleSolenoid m_shifterSolenoid;
+  private Bling m_bling;
 
   @Override
   public void robotInit() {
@@ -57,6 +57,9 @@ public class Robot extends TimedRobot {
     m_shifterSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM,0,1);
     m_shifterSolenoid.set(kForward);
 
+    m_bling = new Bling();
+    m_bling.sendRobotInit();
+
   }
 
   @Override
@@ -72,6 +75,12 @@ public class Robot extends TimedRobot {
       m_shifterSolenoid.set(kForward);
     else if ( m_driverController.getBButtonPressed() )
       m_shifterSolenoid.set(kReverse);
+      
+    if ( m_driverController.getXButtonPressed() )
+      m_bling.sendScanner();
+    if ( m_driverController.getYButtonPressed() )
+      m_bling.sendFirefly();
+
 
   }
 }
