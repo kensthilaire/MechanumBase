@@ -15,6 +15,11 @@ public class Bling {
         cmdPub = networkTable.getStringTopic("command").publish();
     }
 
+    public Bling(NetworkTableInstance inst) {
+        networkTable = inst.getTable("Bling");
+        cmdPub = networkTable.getStringTopic("command").publish();
+    }
+
     public void sendCmd(String cmd) {
         cmdPub.set(cmd);
     }

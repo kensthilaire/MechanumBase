@@ -10,6 +10,8 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 
+import edu.wpi.first.networktables.NetworkTableInstance;
+
 import static edu.wpi.first.wpilibj.DoubleSolenoid.Value.*;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -26,7 +28,10 @@ public class Robot extends TimedRobot {
   private MecanumDrive m_robotDrive;
   private XboxController m_driverController;
   private DoubleSolenoid m_shifterSolenoid;
+  private NetworkTableInstance m_inst;
   private Bling m_bling;
+  private RemoteControl m_remoteController;
+  private boolean m_remoteControl;
 
   @Override
   public void robotInit() {
@@ -57,9 +62,23 @@ public class Robot extends TimedRobot {
     m_shifterSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM,0,1);
     m_shifterSolenoid.set(kForward);
 
-    m_bling = new Bling();
+    // Get the default network tables instance to be used to pass information
+    // between the robot and the raspberry Pi
+    m_inst = NetworkTableInstance.getDefault();
+
+    // Instantiate the LED (aka Bling) class that communicates via network tables
+    // to the raspberry Pi that is controlling the LED strip
+    m_bling = new Bling(m_inst);
     m_bling.sendRobotInit();
 
+    // Instantiate the remote controller that is running on the raspberry Pi and used
+    // to control the robot using the LIDAR sensor.
+    m_remoteController = new RemoteControl(m_inst);
+
+    // we will default to using the local joystick for robot control. May make this a
+    // dashboard preference.
+    m_remoteControl = false;
+    
   }
 
   @Override
@@ -67,19 +86,37 @@ public class Robot extends TimedRobot {
 
     // Use the controller Left Y axis for forward movement, Left X axis for lateral
     // movement, and Right X axis for rotation.
-    m_robotDrive.driveCartesian(-m_driverController.getLeftY(), 
-                                m_driverController.getLeftX(), 
-                                -m_driverController.getRightX());
 
+    if ( m_remoteControl == true ) {
+      m_robotDrive.driveCartesian(-m_remoteController.getLeftY(), 
+      m_remoteController.getLeftX(), 
+      -m_remoteController.getRightX());
+    } else {
+      m_robotDrive.driveCartesian(-m_driverController.getLeftY(), 
+      m_driverController.getLeftX(), 
+      -m_driverController.getRightX());
+    }
+
+    
+    if ( m_remoteController.getAButtonPressed() )
+      m_shifterSolenoid.set(kForward);
+    else if ( m_remoteController.getBButtonPressed() )
+      m_shifterSolenoid.set(kReverse);
+    
+    if ( m_remoteController.getXButtonPressed() )
+      m_remoteControl = false;
+    if ( m_remoteController.getYButtonPressed() )
+      m_remoteControl = true;
+                            
     if ( m_driverController.getAButtonPressed() )
       m_shifterSolenoid.set(kForward);
     else if ( m_driverController.getBButtonPressed() )
       m_shifterSolenoid.set(kReverse);
-      
+
     if ( m_driverController.getXButtonPressed() )
-      m_bling.sendScanner();
+      m_remoteControl = false;
     if ( m_driverController.getYButtonPressed() )
-      m_bling.sendFirefly();
+      m_remoteControl = true;
 
 
   }
