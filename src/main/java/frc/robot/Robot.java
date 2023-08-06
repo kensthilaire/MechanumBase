@@ -89,12 +89,12 @@ public class Robot extends TimedRobot {
 
     if ( m_remoteControl == true ) {
       m_robotDrive.driveCartesian(-m_remoteController.getLeftY(), 
-      m_remoteController.getLeftX(), 
-      -m_remoteController.getRightX());
+          m_remoteController.getLeftX(), 
+          -m_remoteController.getRightX());
     } else {
       m_robotDrive.driveCartesian(-m_driverController.getLeftY(), 
-      m_driverController.getLeftX(), 
-      -m_driverController.getRightX());
+          m_driverController.getLeftX(), 
+          -m_driverController.getRightX());
     }
 
     
@@ -117,7 +117,6 @@ public class Robot extends TimedRobot {
       m_remoteControl = false;
     if ( m_driverController.getYButtonPressed() )
       m_remoteControl = true;
-
 
   }
 }
